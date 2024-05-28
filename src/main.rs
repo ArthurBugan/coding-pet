@@ -1,16 +1,16 @@
 use bevy::prelude::*;
 use bevy::window::close_on_esc;
 
-use hell_game::animation::AnimationPlugin;
-use hell_game::camera::FollowCameraPlugin;
-use hell_game::collision::CollisionPlugin;
-use hell_game::enemy::EnemyPlugin;
-use hell_game::gui::GuiPlugin;
-use hell_game::gun::GunPlugin;
-use hell_game::player::PlayerPlugin;
-use hell_game::state::GameState;
-use hell_game::world::WorldPlugin;
-use hell_game::*;
+use coding_pet::animation::AnimationPlugin;
+use coding_pet::camera::FollowCameraPlugin;
+use coding_pet::collision::CollisionPlugin;
+use coding_pet::enemy::EnemyPlugin;
+use coding_pet::gui::GuiPlugin;
+use coding_pet::gun::GunPlugin;
+use coding_pet::player::PlayerPlugin;
+use coding_pet::state::GameState;
+use coding_pet::world::WorldPlugin;
+use coding_pet::*;
 
 fn main() {
     App::new()
