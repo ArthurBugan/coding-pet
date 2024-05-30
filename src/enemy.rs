@@ -137,9 +137,9 @@ impl EnemyType {
 
     pub fn get_base_sprite_index(&self) -> usize {
         match self {
-            EnemyType::Green => 32,
-            EnemyType::Red => 32,
-            EnemyType::Skin => 32,
+            EnemyType::Green => 200,
+            EnemyType::Red => 300,
+            EnemyType::Skin => 400,
         }
     }
 }

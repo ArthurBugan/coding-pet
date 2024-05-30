@@ -6,8 +6,8 @@ use rand::Rng;
 use crate::animation::AnimationTimer;
 use crate::gun::{Gun, GunTimer};
 use crate::player::{Health, Player, PlayerState};
+use crate::state::GameState;
 use crate::*;
-use crate::{state::GameState, GlobalTextureAtlas};
 
 pub struct WorldPlugin;
 
@@ -34,7 +34,7 @@ fn init_world(
             texture: handle.image.clone().unwrap(),
             atlas: TextureAtlas {
                 layout: handle.layout.clone().unwrap(),
-                index: 97,
+                index: 0,
             },
             transform: Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
             ..default()
@@ -45,6 +45,7 @@ fn init_world(
         AnimationTimer(Timer::from_seconds(0.15, TimerMode::Repeating)),
         GameEntity,
     ));
+
     commands.spawn((
         SpriteSheetBundle {
             texture: handle.image.clone().unwrap(),
