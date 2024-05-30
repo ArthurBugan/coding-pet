@@ -1,16 +1,18 @@
+use bevy::asset::LoadedFolder;
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
 use crate::state::GameState;
-use crate::*;
 
 pub struct ResourcesPlugin;
+use crate::*;
 
 #[derive(Resource)]
 pub struct GlobalTextureAtlas {
     pub layout: Option<Handle<TextureAtlasLayout>>,
     pub image: Option<Handle<Image>>,
 }
+
 #[derive(Resource)]
 pub struct CursorPosition(pub Option<Vec2>);
 
@@ -18,7 +20,9 @@ impl Plugin for ResourcesPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(GlobalTextureAtlas::default())
             .insert_resource(CursorPosition(None))
-            .add_systems(OnEnter(GameState::Loading), load_assets)
+            .add_systems(OnEnter(GameState::Loading), load_textures)
+            .add_systems(Update, check_textures.run_if(in_state(GameState::Loading)))
+            .add_systems(OnEnter(GameState::MainMenu), setup)
             .add_systems(
                 Update,
                 update_cursor_position.run_if(in_state(GameState::InGame)),
@@ -26,24 +30,133 @@ impl Plugin for ResourcesPlugin {
     }
 }
 
-fn load_assets(
-    mut handle: ResMut<GlobalTextureAtlas>,
-    asset_server: Res<AssetServer>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
+#[derive(Resource, Default)]
+struct RpgSpriteFolder(Handle<LoadedFolder>);
+
+fn load_textures(mut commands: Commands, asset_server: Res<AssetServer>) {
+    // load multiple, individual sprites from a folder
+    commands.insert_resource(RpgSpriteFolder(asset_server.load_folder("textures")));
+}
+
+fn check_textures(
     mut next_state: ResMut<NextState<GameState>>,
+    rpg_sprite_folder: Res<RpgSpriteFolder>,
+    mut events: EventReader<AssetEvent<LoadedFolder>>,
+    mut handle: ResMut<GlobalTextureAtlas>,
 ) {
-    handle.image = Some(asset_server.load(SPRITE_SHEET_PATH));
+    // Advance the `GameState` once all sprite handles have been loaded by the `AssetServer`
+    for event in events.read() {
+        if event.is_loaded_with_dependencies(&rpg_sprite_folder.0) {
+            next_state.set(GameState::MainMenu);
+        }
+    }
+}
 
-    let layout: TextureAtlasLayout = TextureAtlasLayout::from_grid(
-        Vec2::new(TILE_W as f32, TILE_H as f32),
-        SPRITE_SHEET_W,
-        SPRITE_SHEET_H,
-        Some(Vec2::new(32.0, 32.0)),
-        Some(Vec2::new(64.0, 64.0)),
+fn setup(
+    rpg_sprite_handles: Res<RpgSpriteFolder>,
+    loaded_folders: Res<Assets<LoadedFolder>>,
+    mut textures: ResMut<Assets<Image>>,
+    mut handle: ResMut<GlobalTextureAtlas>,
+    mut texture_atlases: ResMut<Assets<TextureAtlasLayout>>,
+) {
+    let loaded_folder = loaded_folders.get(&rpg_sprite_handles.0).unwrap();
+
+    // create texture atlases with different padding and sampling
+
+    let (texture_atlas_linear, linear_texture) =
+        create_texture_atlas(loaded_folder, None, &mut textures);
+
+    let atlas = textures.get(&linear_texture).unwrap();
+
+    info!("{} {}", atlas.width(), atlas.height());
+
+    // Separate the TextureAtlasLayout into a grid using from_grid
+    let grid_layout = TextureAtlasLayout::from_grid(
+        Vec2::new(128.0, 128.0),     // Tile size
+        20,                          // Width of the texture atlas
+        20,                          // Height of the texture atlas
+        Some(Vec2::new(64.0, 64.0)), // Optional minimum size
+        Some(Vec2::new(32.0, 32.0)), // Optional maximum size
     );
-    handle.layout = Some(texture_atlas_layouts.add(layout));
 
-    next_state.set(GameState::MainMenu);
+    let texture_atlas_handle = texture_atlases.add(grid_layout);
+
+    handle.layout = Some(texture_atlas_handle);
+    handle.image = Some(linear_texture.clone());
+}
+
+/// Create a texture atlas with the given padding and sampling settings
+/// from the individual sprites in the given folder.
+fn create_texture_atlas(
+    folder: &LoadedFolder,
+    padding: Option<UVec2>,
+    textures: &mut ResMut<Assets<Image>>,
+) -> (TextureAtlasLayout, Handle<Image>) {
+    // Build a texture atlas using the individual sprites
+    let mut texture_atlas_builder = TextureAtlasBuilder::default()
+        .padding(padding.unwrap_or_default())
+        .max_size(Vec2::new(4000.0, 4000.0));
+
+    for handle in folder.handles.iter() {
+        let id = handle.id().typed_unchecked::<Image>();
+        let Some(texture) = textures.get(id) else {
+            warn!(
+                "{:?} did not resolve to an `Image` asset.",
+                handle.path().unwrap()
+            );
+            continue;
+        };
+
+        texture_atlas_builder.add_texture(Some(id), texture);
+    }
+
+    let (texture_atlas_layout, texture) = texture_atlas_builder.finish().unwrap();
+
+    let texture = textures.add(texture);
+
+    (texture_atlas_layout, texture)
+}
+
+/// Create and spawn a sprite from a texture atlas
+fn create_sprite_from_atlas(
+    commands: &mut Commands,
+    translation: (f32, f32, f32),
+    sprite_index: usize,
+    atlas_handle: Handle<TextureAtlasLayout>,
+    texture: Handle<Image>,
+) {
+    commands.spawn((
+        SpriteBundle {
+            transform: Transform {
+                translation: Vec3::new(translation.0, translation.1, translation.2),
+                scale: Vec3::splat(3.0),
+                ..default()
+            },
+            texture,
+            ..default()
+        },
+        TextureAtlas {
+            layout: atlas_handle,
+            index: sprite_index,
+        },
+    ));
+}
+
+/// Create and spawn a label (text)
+fn create_label(
+    commands: &mut Commands,
+    translation: (f32, f32, f32),
+    text: &str,
+    text_style: TextStyle,
+) {
+    commands.spawn(Text2dBundle {
+        text: Text::from_section(text, text_style).with_justify(JustifyText::Center),
+        transform: Transform {
+            translation: Vec3::new(translation.0, translation.1, translation.2),
+            ..default()
+        },
+        ..default()
+    });
 }
 
 fn update_cursor_position(

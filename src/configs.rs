@@ -3,7 +3,7 @@ pub const WW: f32 = 1200.0;
 pub const WH: f32 = 900.0;
 
 // Sprites
-pub const SPRITE_SHEET_PATH: &str = "assets.png";
+pub const SPRITE_SHEET_PATH: &str = "textures/Pawn_Blue.png";
 pub const SPRITE_SCALE_FACTOR: f32 = 0.5;
 pub const TILE_W: usize = 64;
 pub const TILE_H: usize = 64;
