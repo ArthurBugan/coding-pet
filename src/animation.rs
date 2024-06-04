@@ -13,6 +13,12 @@ pub struct AnimationPlugin;
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub Timer);
 
+#[derive(Component)]
+pub struct AnimationIndices {
+    pub first: usize,
+    pub last: usize,
+}
+
 impl Plugin for AnimationPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
@@ -47,14 +53,20 @@ fn animate_player(
     }
 
     let (mut atlas, state, timer) = player_query.single_mut();
+
     if timer.just_finished() {
-        let base_sprite_index = match state {
-            PlayerState::Idle => 0,
-            PlayerState::Run => 32,
+        let base_sprite_index: AnimationIndices = match state {
+            PlayerState::Idle => AnimationIndices { first: 0, last: 5 },
+            PlayerState::Run => AnimationIndices { first: 6, last: 11 },
         };
 
-        atlas.index = base_sprite_index + ((atlas.index + 1) * 2) % 10;
-        info!("atlas.index: {}", atlas.index);
+        if base_sprite_index.last <= atlas.index {
+            atlas.index = base_sprite_index.first;
+        } else if base_sprite_index.first > atlas.index {
+            atlas.index = base_sprite_index.first;
+        } else {
+            atlas.index = atlas.index + 1
+        }
     }
 }
 
@@ -67,7 +79,13 @@ fn animate_enemy(
 
     for (mut atlas, timer, enemy_type) in enemy_query.iter_mut() {
         if timer.just_finished() {
-            atlas.index = enemy_type.get_base_sprite_index() + ((atlas.index + 1) * 2) % 10;
+            if enemy_type.get_base_sprite_index().last <= atlas.index {
+                atlas.index = enemy_type.get_base_sprite_index().first;
+            } else if enemy_type.get_base_sprite_index().first > atlas.index {
+                atlas.index = enemy_type.get_base_sprite_index().first;
+            } else {
+                atlas.index = atlas.index + 1
+            }
         }
     }
 }

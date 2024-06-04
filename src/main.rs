@@ -1,9 +1,14 @@
-use bevy::prelude::*;
 use bevy::window::close_on_esc;
+use bevy::{
+    log::LogPlugin,
+    prelude::*,
+    window::{PresentMode, WindowMode},
+};
 
 use coding_pet::animation::AnimationPlugin;
 use coding_pet::camera::FollowCameraPlugin;
 use coding_pet::collision::CollisionPlugin;
+use coding_pet::debug::DebugPlugin;
 use coding_pet::enemy::EnemyPlugin;
 use coding_pet::gui::GuiPlugin;
 use coding_pet::gun::GunPlugin;
@@ -17,13 +22,24 @@ fn main() {
         .init_state::<GameState>()
         .add_plugins(
             DefaultPlugins
+                .set(LogPlugin {
+                    filter: "info,wgpu_core=warn,wgpu_hal=warn,coding_pet=debug".into(),
+                    level: bevy::log::Level::DEBUG,
+                    ..default()
+                })
                 .set(ImagePlugin::default_nearest())
                 .set(WindowPlugin {
                     primary_window: Some(Window {
-                        // mode: bevy::window::WindowMode::Fullscreen,
-                        resizable: true,
-                        focused: true,
-                        resolution: (WW, WH).into(),
+                        title: "Tiktok game + Bevy!".into(),
+                        name: Some("MyWindow".into()),
+                        resolution: (1920., 1080.).into(),
+                        present_mode: PresentMode::AutoVsync,
+                        mode: WindowMode::Windowed,
+                        enabled_buttons: bevy::window::EnabledButtons {
+                            maximize: false,
+                            ..Default::default()
+                        },
+                        visible: true,
                         ..default()
                     }),
                     ..default()
@@ -35,6 +51,7 @@ fn main() {
         .add_plugins(FollowCameraPlugin)
         .add_plugins(GuiPlugin)
         .add_plugins(GunPlugin)
+        .add_plugins(DebugPlugin)
         .add_plugins(PlayerPlugin)
         .add_plugins(AnimationPlugin)
         .add_plugins(ResourcesPlugin)

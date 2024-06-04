@@ -5,12 +5,20 @@ use bevy::window::PrimaryWindow;
 use crate::state::GameState;
 
 pub struct ResourcesPlugin;
-use crate::*;
 
 #[derive(Resource)]
 pub struct GlobalTextureAtlas {
     pub layout: Option<Handle<TextureAtlasLayout>>,
     pub image: Option<Handle<Image>>,
+}
+
+impl Default for GlobalTextureAtlas {
+    fn default() -> Self {
+        Self {
+            layout: None,
+            image: None,
+        }
+    }
 }
 
 #[derive(Resource)]
@@ -53,6 +61,7 @@ fn check_textures(
 }
 
 fn setup(
+    mut commands: Commands,
     rpg_sprite_handles: Res<RpgSpriteFolder>,
     loaded_folders: Res<Assets<LoadedFolder>>,
     mut textures: ResMut<Assets<Image>>,
@@ -68,13 +77,27 @@ fn setup(
 
     let atlas = textures.get(&linear_texture).unwrap();
 
-    info!("{} {}", atlas.width(), atlas.height());
+    info!(
+        "atlas width {:?}, atlas height {:?}",
+        atlas.width(),
+        atlas.height()
+    );
 
-    // Separate the TextureAtlasLayout into a grid using from_grid
+    /*
+      commands.spawn(SpriteBundle {
+        texture: linear_texture.clone(),
+        transform: Transform {
+            translation: Vec3::new(-250.0, -130.0, 0.0),
+            scale: Vec3::splat(0.8),
+            ..default()
+        },
+        ..default()
+    });
+    */
     let grid_layout = TextureAtlasLayout::from_grid(
         Vec2::new(128.0, 128.0),     // Tile size
-        20,                          // Width of the texture atlas
-        20,                          // Height of the texture atlas
+        50,                          // Width of the texture atlas
+        50,                          // Height of the texture atlas
         Some(Vec2::new(64.0, 64.0)), // Optional minimum size
         Some(Vec2::new(32.0, 32.0)), // Optional maximum size
     );
@@ -95,7 +118,7 @@ fn create_texture_atlas(
     // Build a texture atlas using the individual sprites
     let mut texture_atlas_builder = TextureAtlasBuilder::default()
         .padding(padding.unwrap_or_default())
-        .max_size(Vec2::new(4000.0, 4000.0));
+        .max_size(Vec2::new(8000.0, 10000.0));
 
     for handle in folder.handles.iter() {
         let id = handle.id().typed_unchecked::<Image>();
@@ -107,11 +130,13 @@ fn create_texture_atlas(
             continue;
         };
 
+        info!("id {}, path {:?}", id, handle.path());
         texture_atlas_builder.add_texture(Some(id), texture);
     }
 
     let (texture_atlas_layout, texture) = texture_atlas_builder.finish().unwrap();
 
+    info!("size {}", texture_atlas_layout.size);
     let texture = textures.add(texture);
 
     (texture_atlas_layout, texture)
@@ -174,13 +199,4 @@ fn update_cursor_position(
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
         .map(|ray| ray.origin.truncate());
-}
-
-impl Default for GlobalTextureAtlas {
-    fn default() -> Self {
-        Self {
-            layout: None,
-            image: None,
-        }
-    }
 }

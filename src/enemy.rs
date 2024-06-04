@@ -1,3 +1,4 @@
+use animation::AnimationIndices;
 use bevy::utils::Duration;
 use std::f32::consts::PI;
 
@@ -20,9 +21,18 @@ pub struct Enemy {
 
 #[derive(Component)]
 pub enum EnemyType {
-    Green,
-    Red,
-    Skin,
+    TorchBlue,
+    TorchRed,
+    TorchPurple,
+    TorchYellow,
+    BarrelBlue,
+    BarrelRed,
+    BarrelPurple,
+    BarrelYellow,
+    TntBlue,
+    TntRed,
+    TntPurple,
+    TntYellow,
 }
 
 impl Plugin for EnemyPlugin {
@@ -83,12 +93,13 @@ fn spawn_enemies(
     for _ in 0..enemy_spawn_count {
         let (x, y) = get_random_position_around(player_pos);
         let enemy_type = EnemyType::get_rand_enemy();
+
         commands.spawn((
             SpriteSheetBundle {
                 texture: handle.image.clone().unwrap(),
                 atlas: TextureAtlas {
                     layout: handle.layout.clone().unwrap(),
-                    index: enemy_type.get_base_sprite_index(),
+                    index: enemy_type.get_base_sprite_index().first,
                 },
                 transform: Transform::from_translation(vec3(x, y, 1.0))
                     .with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
@@ -127,19 +138,76 @@ impl Default for Enemy {
 impl EnemyType {
     fn get_rand_enemy() -> Self {
         let mut rng = rand::thread_rng();
-        let rand_index = rng.gen_range(0..3);
+        let rand_index = rng.gen_range(0..11);
+
         return match rand_index {
-            0 => Self::Green,
-            1 => Self::Red,
-            _ => Self::Skin,
+            0 => Self::TorchBlue,
+            1 => Self::TorchYellow,
+            2 => Self::TorchPurple,
+            3 => Self::TorchRed,
+            4 => Self::BarrelBlue,
+            5 => Self::BarrelRed,
+            6 => Self::BarrelPurple,
+            7 => Self::BarrelYellow,
+            8 => Self::TntBlue,
+            9 => Self::TntRed,
+            10 => Self::TntPurple,
+            11 => Self::TntYellow,
+            _ => Self::TorchBlue,
         };
     }
 
-    pub fn get_base_sprite_index(&self) -> usize {
+    pub fn get_base_sprite_index(&self) -> AnimationIndices {
         match self {
-            EnemyType::Green => 200,
-            EnemyType::Red => 300,
-            EnemyType::Skin => 400,
+            EnemyType::TorchBlue => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::TorchYellow => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::TorchPurple => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::TorchRed => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+
+            EnemyType::BarrelBlue => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::BarrelRed => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::BarrelPurple => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::BarrelYellow => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::TntBlue => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::TntRed => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::TntPurple => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
+            EnemyType::TntYellow => AnimationIndices {
+                first: 606,
+                last: 611,
+            },
         }
     }
 }

@@ -51,7 +51,7 @@ fn init_world(
             texture: handle.image.clone().unwrap(),
             atlas: TextureAtlas {
                 layout: handle.layout.clone().unwrap(),
-                index: 118,
+                index: 0,
             },
             transform: Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
             ..default()
@@ -69,12 +69,15 @@ fn spawn_world_decorations(mut commands: Commands, handle: Res<GlobalTextureAtla
     for _ in 0..NUM_WORLD_DECORATIONS {
         let x = rng.gen_range(-WORLD_W..WORLD_W);
         let y = rng.gen_range(-WORLD_H..WORLD_H);
+
+        let index = rng.gen_range(1200..=1240);
+
         commands.spawn((
             SpriteSheetBundle {
                 texture: handle.image.clone().unwrap(),
                 atlas: TextureAtlas {
                     layout: handle.layout.clone().unwrap(),
-                    index: rng.gen_range(49..=53),
+                    index,
                 },
                 transform: Transform::from_translation(vec3(x, y, 0.0))
                     .with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),

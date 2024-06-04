@@ -90,6 +90,7 @@ fn handle_gun_input(
     }
 
     let (gun_transform, mut gun_timer) = gun_query.single_mut();
+
     let gun_pos = gun_transform.translation.truncate();
     gun_timer.0.tick(time.delta());
 
@@ -108,6 +109,7 @@ fn handle_gun_input(
                 bullet_direction.y + rng.gen_range(-0.5..0.5),
                 bullet_direction.z,
             );
+
             commands.spawn((
                 SpriteSheetBundle {
                     texture: handle.image.clone().unwrap(),
