@@ -3,15 +3,14 @@ pub const WW: f32 = 1200.0;
 pub const WH: f32 = 900.0;
 
 // Sprites
-pub const SPRITE_SHEET_PATH: &str = "textures/Pawn_Blue.png";
-pub const SPRITE_SCALE_FACTOR: f32 = 0.5;
+pub const SPRITE_SCALE_FACTOR: f32 = 1.5;
 pub const TILE_W: usize = 64;
 pub const TILE_H: usize = 64;
 pub const SPRITE_SHEET_W: usize = 16;
 pub const SPRITE_SHEET_H: usize = 16;
 
 // World
-pub const NUM_WORLD_DECORATIONS: usize = 500;
+pub const NUM_WORLD_DECORATIONS: usize = 200;
 pub const WORLD_W: f32 = 3000.0;
 pub const WORLD_H: f32 = 2500.0;
 
@@ -20,7 +19,7 @@ pub const PLAYER_SPEED: f32 = 2.0;
 pub const PLAYER_HEALTH: f32 = 100.0;
 
 // Enemy
-pub const MAX_NUM_ENEMIES: usize = 20;
+pub const MAX_NUM_ENEMIES: usize = 5;
 pub const ENEMY_DAMAGE: f32 = 1.0;
 pub const SPAWN_RATE_PER_SECOND: usize = 2;
 pub const ENEMY_HEALTH: f32 = 100.0;

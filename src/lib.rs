@@ -2,6 +2,7 @@ pub mod animation;
 pub mod camera;
 pub mod collision;
 pub mod configs;
+pub mod debug;
 pub mod enemy;
 pub mod gui;
 pub mod gun;
